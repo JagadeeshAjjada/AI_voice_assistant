@@ -1,8 +1,6 @@
-def generate_response(user_input):
-    if "name" in user_input:
-        return "My name is Booddi, your voice assistant."
-    elif "time" in user_input:
-        from time import ctime
-        return f"The current time is {ctime()}"
-    else:
-        return "I'm still learning. Try asking something else."
+from .ai_model import query_model
+
+def generate_response(user_input: str) -> str:
+    if not user_input:
+        return "Sorry, I didn't catch that. Could you repeat?"
+    return query_model(user_input)
