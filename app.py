@@ -1,63 +1,29 @@
 import streamlit as st
-import voice_assistant
-from streamlit_chat import message
-import pandas as pd
+from main import handle_user_input
 
+st.set_page_config(layout="wide", page_title="AI Voice Assistant", page_icon="🎙️")
+st.title("🎙️ AI Voice Assistant")
 
-st.set_page_config(page_title="AI Voice Assistant", page_icon='🎙️', layout="wide")
-st.title("Voice Assistant App")
-st.subheader("Hands On  Python Workshop")
-st.write('''The AI voice assistant is created as " part of the Hands 
-on python workshop 2021-2022" for high-school students in U.A.E  to train on python language starting from basics to advanced topics which is 
-used to develop The chatbot''')
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
 
-st.subheader("Objectives")
-st.markdown("""
-1. Understand python basics.
-2. Learn to write and test Python 3 code.
-3. Dive into more advanced topics of python 3.
-4. Build voice recognition application using the integrated knowledge 
-""")
+st.markdown("**Click the button to speak or type below:**")
+col1, col2 = st.columns([1, 5])
 
-st.subheader("Requirements")
-st.markdown("""
-1. Internet Connection
-2 .Min Windows version : 10
-3. Min python version : 3.7.12
-4. Visual Studio Code
-""")
+with col1:
+    if st.button("🎤 Speak"):
+        response = handle_user_input(mode="voice")
+        if response:
+            st.session_state.chat_history.append(("user", response['user']))
+            st.session_state.chat_history.append(("assistant", response['assistant']))
 
+with col2:
+    user_input = st.text_input("Or type here:", key="text_input")
+    if st.button("💬 Submit") and user_input:
+        response = handle_user_input(mode="text", user_text=user_input)
+        st.session_state.chat_history.append(("user", user_input))
+        st.session_state.chat_history.append(("assistant", response['assistant']))
 
-st.subheader("Benefits")
-st.markdown("""
-Get Certified by Artificial Intelligence Research Center (AIRC-AU)
-""")
-
-
-st.subheader("Workshop Description")
-st.markdown("""
-Python is a language with a simple syntax and a powerful set of libraries and opens up the path to establishing machine learning and data analytics careers. As an aspiring python programmer, it provides several job opportunities and promises high growth with huge salary prospects in big companies such as Facebook, Amazon, Netflix, Google, and NASA.
-
-This workshop aims to teach python language to students without prior programming experience in just 2 weeks and deliver the basic programming principles such as operations, control structures, data types, etc. Also, it covers advanced topics in python such as dictionaries and list manipulation, creating and calling functions, and file manipulation. Our workshop includes practice and debugging sessions to enrich the students' knowledge, and grasp of python and enhance their problem-solving skills. Finally, applying the knowledge of the course content in an innovative voice assistant  application and in-class competition. 
-
-At the end of this workshop, students will have a comprehensive understanding of python and implement practical and innovative speech assistant project.
-""")
-
-st.subheader("Workshop Agenda")
-data = {"Time":["10 min","30 min", "10 min", "20 min","30 min", "30 min","30 min","50 min","20 min","30 min","50 min","30 min","20 min","6 hours"],
-        "Topic":["Workshop Overview", "Project Demo", "Introduction to Python", "Starting with Python Editor", "Comment and Print", "Variables and Simple data types", "String Manipulation", "Data Types and String Manipulation tutorial", "If Statement", "Loops","Conditional Statement and iterative loops tutorial", "Functions", "Exception Handling","Final Python Project: Voice Assistant App" ],
-        "Instructor":["Dr.Sharif Makhadmeh", "Eng. Lamees Dalbah","Eng. Lamees Dalbah", "Eng. Shaimaa Kouka","Eng. Lamees Dalbah","Eng. Shaimaa Kouka","Eng. Shaimaa Kouka" ,"Eng. Shaimaa Kouka","Eng. Lamees Dalbah","Eng. Lamees Dalbah","Eng. Lamees Dalbah","Eng. Shaimaa Kouka","Eng. Shaimaa Kouka","Eng. Shaimaa Kouka"  ]}
-df = pd.DataFrame(data)
-st.table(df)
-
-
-st.set_page_config( layout="wide",page_title="AI Voice Assistant",page_icon='🎙️')
-st.title("Test the App")
-listen_btn = st.button("Record")
-if listen_btn:
-    with st.spinner("Recording User Voice ..."):
-        voice_data = voice_assistant.record_audio("Recording")
-    message(voice_data, is_user=True)
-    go = voice_assistant.respond(voice_data)
-    if go == 0:
-        st.stop()
+# Display chat history
+for role, msg in st.session_state.chat_history:
+    st.markdown(f"**{role.title()}:** {msg}")
