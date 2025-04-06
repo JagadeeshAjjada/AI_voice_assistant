@@ -1,6 +1,7 @@
-streamlit==1.19.0
-streamlit_chat==0.0.2.2
-SpeechRecognition==3.8.1
-pyttsx3==2.90
-transformers==4.39.1
+streamlit
+streamlit_chat
+speechrecognition
+pyttsx3
+transformers
 torch
+pyaudio
