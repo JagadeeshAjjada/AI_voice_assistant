@@ -1,29 +1,34 @@
 import streamlit as st
-from main import handle_user_input
+from assistant.core import generate_response
+from utils.speech import record_audio, speak_text
+from utils.text_chat import text_chat_interface
+from assistant.memory import save_chat_history, load_chat_history
 
-st.set_page_config(layout="wide", page_title="AI Voice Assistant", page_icon="🎙️")
-st.title("🎙️ AI Voice Assistant")
+st.set_page_config(page_title="AI Voice Assistant", layout="centered", page_icon="🎙️")
+st.title("🎙️ AI Voice & Text Assistant")
 
+# Chat History Setup
 if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
-
-st.markdown("**Click the button to speak or type below:**")
-col1, col2 = st.columns([1, 5])
-
-with col1:
-    if st.button("🎤 Speak"):
-        response = handle_user_input(mode="voice")
-        if response:
-            st.session_state.chat_history.append(("user", response['user']))
-            st.session_state.chat_history.append(("assistant", response['assistant']))
-
-with col2:
-    user_input = st.text_input("Or type here:", key="text_input")
-    if st.button("💬 Submit") and user_input:
-        response = handle_user_input(mode="text", user_text=user_input)
-        st.session_state.chat_history.append(("user", user_input))
-        st.session_state.chat_history.append(("assistant", response['assistant']))
+    st.session_state.chat_history = load_chat_history()
 
 # Display chat history
-for role, msg in st.session_state.chat_history:
-    st.markdown(f"**{role.title()}:** {msg}")
+for user, bot in st.session_state.chat_history:
+    with st.chat_message("user"):
+        st.markdown(user)
+    with st.chat_message("assistant"):
+        st.markdown(bot)
+
+# Voice Input Button
+if st.button("🎙️ Record Voice"):
+    st.info("Recording... Please speak")
+    voice_input = record_audio()
+    st.chat_message("user").markdown(voice_input)
+    bot_response = generate_response(voice_input)
+    st.chat_message("assistant").markdown(bot_response)
+    speak_text(bot_response)
+    st.session_state.chat_history.append((voice_input, bot_response))
+    save_chat_history(st.session_state.chat_history)
+
+# Fallback Text Chat
+with st.expander("💬 Or use Text Chat"):
+    text_chat_interface()
